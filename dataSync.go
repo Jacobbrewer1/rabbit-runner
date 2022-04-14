@@ -13,15 +13,15 @@ import (
 
 type (
 	rabbit struct {
-		User      *string `json:"user,omitempty"`
-		Password  *string `json:"password,omitempty"`
-		Location  *string `json:"location,omitempty"`
-		QueueName *string `json:"queuename,omitempty"`
+		User     *string   `json:"user,omitempty"`
+		Password *string   `json:"password,omitempty"`
+		Location *string   `json:"location,omitempty"`
+		Queues   *[]string `json:"queues,omitempty"`
 	}
 )
 
 func (r rabbit) IsPopulated() bool {
-	return r.User != nil && r.Password != nil && r.Location != nil && r.QueueName != nil
+	return r.User != nil && r.Password != nil && r.Location != nil && r.Queues != nil
 }
 
 func init() {
@@ -34,12 +34,16 @@ func init() {
 func main() {
 	msg, err := ReadMessage()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		fmt.Scanln()
+		os.Exit(1)
 	}
 
 	rab, err := ReadConfig()
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
+		fmt.Scanln()
+		os.Exit(1)
 	}
 
 	log.Println("connecting to rabbit")
@@ -53,24 +57,29 @@ func main() {
 	log.Println("opening channel")
 	ch, err := conn.Channel()
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
+		fmt.Scanln()
+		os.Exit(1)
 	}
 	log.Println("channel opened")
 
-	log.Println("publishing message")
-	err = ch.Publish(
-		"",
-		*rab.QueueName,
-		false,
-		false,
-		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        []byte(msg),
-		})
-	if err != nil {
-		log.Fatalln(err)
+	for _, q := range *rab.Queues {
+		log.Printf("publishing message to queue %s\n", q)
+		err = ch.Publish(
+			"",
+			q,
+			false,
+			false,
+			amqp.Publishing{
+				ContentType: "text/plain",
+				Body:        []byte(msg),
+			})
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		log.Printf("message published to queue %s\n", q)
 	}
-	log.Println("message published")
 }
 
 func ReadConfig() (rabbit, error) {

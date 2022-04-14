@@ -1,6 +1,8 @@
 {
-    "user": "user",
-    "password": "password",
-    "location": "localhost",
-    "queuename": "queue"
+  "user": "user",
+  "password": "password",
+  "location": "localhost",
+  "queue": [
+    "queue"
+  ]
 }
