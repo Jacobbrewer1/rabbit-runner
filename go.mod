@@ -1,4 +1,4 @@
-module tillSync
+module github.com/Jacobbrewer1/rabbit-runner
 
 go 1.18
 
