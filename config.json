@@ -2,7 +2,7 @@
   "user": "user",
   "password": "password",
   "location": "localhost",
-  "queue": [
+  "queues": [
     "queue"
   ]
 }
